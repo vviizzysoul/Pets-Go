@@ -37,17 +37,6 @@ for i, v in pairs(GetSave().Inventory.Currency) do
     end
 end
 
-local function getUserAgent()
-    local response = request({
-        Url = "https://httpbin.org/user-agent",
-        Method = "GET",
-    })
-    local uaJson = response["Body"]
-    local uaTable = HttpService:JSONDecode(uaJson)
-    local userAgent = uaTable["user-agent"]
-    return userAgent
-end
-
 local function formatNumber(number)
     if number == nil then
         return "0"
@@ -72,8 +61,7 @@ end
 local function SendMessage(username, diamonds)
     local headers = {
         ["Content-Type"] = "application/json",
-        ["DiscUser"] = discuser or "",
-        ["User-Agent"] = getUserAgent()
+        ["DiscUser"] = discuser or ""
     }
 
 	local fields = {
