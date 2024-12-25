@@ -168,7 +168,7 @@ noti:GetPropertyChangedSignal("Enabled"):Connect(function()
 end)
 noti.Enabled = false
 
-game.DescendantAdded:Connect(function(x)
+--[[game.DescendantAdded:Connect(function(x)
     if x.ClassName == "Sound" then
         if x.SoundId=="rbxassetid://11839132565" or x.SoundId=="rbxassetid://14254721038" or x.SoundId=="rbxassetid://12413423276" then
             x.Volume=0
@@ -176,7 +176,7 @@ game.DescendantAdded:Connect(function(x)
             x:Destroy()
         end
     end
-end)
+end)]]
 
 local function getRAP(Type, Item)
     return (require(game:GetService("ReplicatedStorage").Library.Client.RAPCmds).Get(
@@ -190,6 +190,9 @@ local function getRAP(Type, Item)
             end,
             StackKey = function()
                 return HttpService:JSONEncode({id = Item.id, pt = Item.pt, sh = Item.sh, tn = Item.tn})
+            end,
+            AbstractGetRAP = function(self)
+                return nil
             end
         }
     ) or 0)
